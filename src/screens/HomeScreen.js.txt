@@ -1,0 +1,204 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons'; // Using Expo icons
+import { getSessions } from '../utils/storage';
+import InfoModal from '../components/InfoModal';
+
+const HomeScreen = ({ navigation }) => {
+  const [sessions, setSessions] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const isFocused = useIsFocused(); 
+
+  [cite_start]// Reload data whenever screen comes into focus [cite: 33]
+  useEffect(() => {
+    if (isFocused) {
+      loadData();
+    }
+  }, [isFocused]);
+
+  const loadData = async () => {
+    const data = await getSessions();
+    setSessions(data);
+  };
+
+  [cite_start]// [cite: 12] Show list of past records
+  const renderItem = ({ item }) => {
+    const dateObj = new Date(item.date);
+    const dateStr = dateObj.toLocaleDateString();
+    const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const durationMins = Math.floor(item.duration / 60); 
+    const durationSecs = item.duration % 60;
+
+    return (
+      <View style={styles.card}>
+        <View>
+          <Text style={styles.cardDate}>{dateStr} • {timeStr}</Text>
+          <Text style={styles.cardKicks}>{item.kicks} Movements</Text>
+        </View>
+        <View style={styles.durationContainer}>
+          <Text style={styles.durationText}>{durationMins}m {durationSecs}s</Text>
+          <Text style={styles.durationLabel}>Duration</Text>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Fetal Tracker</Text>
+        [cite_start]{/* [cite: 25, 27] Info Button */}
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <Ionicons name="information-circle-outline" size={32} color="#333" />
+        </TouchableOpacity>
+      </View>
+
+      [cite_start]{/* Static Article Section [cite: 10] */}
+      <View style={styles.articleSection}>
+        <Text style={styles.articleTitle}>Why track movements?</Text>
+        <Text style={styles.articleDesc}>
+          Monitoring your baby's activity pattern is an excellent way to gauge their well-being.
+        </Text>
+      </View>
+
+      <Text style={styles.sectionHeader}>History</Text>
+
+      <FlatList
+        data={sessions}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No sessions recorded yet.</Text>
+        }
+      />
+
+      {/* FAB to Start Tracking */}
+      <TouchableOpacity 
+        style={styles.fab} 
+        onPress={() => navigation.navigate('Counter')}
+      >
+        <Ionicons name="add" size={32} color="white" />
+      </TouchableOpacity>
+
+      <InfoModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F9FC',
+    paddingTop: 60, // Safe area padding
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  articleSection: {
+    backgroundColor: '#E3F2FD',
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 25,
+    borderLeftWidth: 5,
+    borderLeftColor: '#2196F3',
+  },
+  articleTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#0D47A1',
+  },
+  articleDesc: {
+    color: '#1565C0',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 20,
+    marginBottom: 10,
+    color: '#333',
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+  },
+  card: {
+    backgroundColor: 'white',
+    padding: 18,
+    borderRadius: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardDate: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  cardKicks: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 4,
+  },
+  durationContainer: {
+    alignItems: 'flex-end',
+    backgroundColor: '#F0FCF0',
+    padding: 8,
+    borderRadius: 8,
+  },
+  durationText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+  },
+  durationLabel: {
+    fontSize: 10,
+    color: '#4CAF50',
+    textTransform: 'uppercase',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FF6B6B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#FF6B6B',
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 50,
+    color: '#999',
+    fontSize: 16,
+  },
+});
+
+export default HomeScreen;

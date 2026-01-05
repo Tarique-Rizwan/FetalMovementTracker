@@ -1,0 +1,27 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = '@fetal_movement_sessions';
+
+[cite_start]// Save a new session [cite: 32]
+export const saveSession = async (newSession) => {
+  try {
+    const existingData = await getSessions();
+    const updatedData = [newSession, ...existingData]; // Add new session to the top
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+  } catch (e) {
+    console.error('Failed to save session', e);
+  }
+};
+
+[cite_start]// Load sessions and sort by date [cite: 33, 34]
+export const getSessions = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
+    const data = jsonValue != null ? JSON.parse(jsonValue) : [];
+    // Sort descending (newest first)
+    return data.sort((a, b) => new Date(b.date) - new Date(a.date)); 
+  } catch (e) {
+    console.error('Failed to load sessions', e);
+    return [];
+  }
+};
