@@ -32,7 +32,9 @@ A React Native application to track fetal kicks and movements. This app works en
    git clone <repository_url>
    cd FetalMovementTracker
 
-   - **iOS:**
+
+- **iOS:**
+
    ```bash
    git clone <repository_url>
    cd FetalMovementTracker
